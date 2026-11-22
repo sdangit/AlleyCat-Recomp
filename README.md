@@ -1,3 +1,16 @@
+> [!NOTE]
+> **About this fork:** This fork adds native macOS support, initially for Apple Silicon, to
+> [Syncr0ndi/AlleyCat-Recomp](https://github.com/Syncr0ndi/AlleyCat-Recomp). Port development lives
+> on `macos`; `main` is kept aligned with upstream.
+>
+> **Fully agentic development:** The macOS port was planned, implemented, tested, and reviewed
+> by Codex AI agents and sub-agents. The human maintainer directed and approved the work and
+> separately confirmed a passing manual test. This disclosure applies to this fork's macOS work;
+> the original project remains credited to its upstream authors.
+>
+> See [validation results and limitations](docs/MACOS_VALIDATION.md). Local Mac artifacts are
+> ad-hoc signed and are not notarized.
+
 <p align="center">
   <img src="docs/images/logo.svg" alt="Alley Cat Recomp" width="620">
 </p>

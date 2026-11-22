@@ -3,8 +3,11 @@
 Status: **ENGINEERING_COMPLETE** (G01–G09 passed); distribution qualification remains **NOT_RUN**.
 
 Validation date: 21 November 2026. The implementation is on `macos`; `main` remains at upstream
-revision `ed19308f2e73100fbe4fb09dd3585f083ff7361b`. No branch, artifact, or game data was pushed
-or published. See the [execution plan](MACOS_PLAN.md) and [task ledger](macos/tasks.json).
+revision `ed19308f2e73100fbe4fb09dd3585f083ff7361b`. At the initial validation checkpoint, no branch,
+artifact, or game data had been pushed or published. The maintainer subsequently reported that
+manual testing passed and authorized pushing the `macos` source branch to the fork. This manual
+result does not extend the hardware or OS coverage documented below. See the
+[execution plan](MACOS_PLAN.md) and [task ledger](macos/tasks.json).
 
 ## Scope and environment
 
@@ -91,5 +94,5 @@ These local paths are operational evidence, not dependencies required to build t
 
 Older macOS releases, physical Intel Macs, universal binaries, physical controllers/Bluetooth,
 Windows gameplay, and a separate clean Mac were not tested. Hosted GitHub Actions jobs are configured
-but have not been run remotely because this branch has not been pushed. Ad-hoc signing is suitable
+but had not been run remotely at the initial validation checkpoint. Ad-hoc signing is suitable
 for local testing and does not make the archive Developer ID signed, notarized, or distribution-ready.

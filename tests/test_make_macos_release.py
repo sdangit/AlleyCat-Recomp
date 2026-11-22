@@ -67,5 +67,33 @@ class PackagingBoundaries(unittest.TestCase):
                     pack.package(argparse.Namespace(output=p))
             self.assertEqual(sentinel.read_text(), 'important')
 
+    def test_output_inside_app_is_rejected_without_mutation(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as tmp:
+            app = self.make_bundle(Path(tmp))
+            sentinel = app / 'Contents/Resources/keep'
+            sentinel.write_text('important')
+            before = {str(p.relative_to(app)): p.read_bytes() for p in app.rglob('*') if p.is_file()}
+            for output in (app / 'release', app / 'Contents/../release', app):
+                with self.subTest(output=output), patch.object(pack.sys, 'platform', 'darwin'), \
+                        patch.object(pack, 'inspect_bundle') as inspect:
+                    with self.assertRaises(pack.AuditError):
+                        pack.package(argparse.Namespace(app=app, output=output))
+                    inspect.assert_not_called()
+                self.assertEqual({str(p.relative_to(app)): p.read_bytes() for p in app.rglob('*') if p.is_file()}, before)
+                self.assertFalse((app / 'release').exists())
+
+    @unittest.skipIf(os.name == "nt", "Creating symlinks may require Windows developer privileges")
+    def test_output_symlink_parent_cannot_enter_app(self):
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as tmp:
+            app = self.make_bundle(Path(tmp))
+            alias = Path(tmp) / 'alias'
+            alias.symlink_to(app, target_is_directory=True)
+            with patch.object(pack.sys, 'platform', 'darwin'):
+                with self.assertRaisesRegex(pack.AuditError, 'outside the source app'):
+                    pack.package(argparse.Namespace(app=app, output=alias / 'release'))
+            self.assertFalse((app / 'release').exists())
+
 
 if __name__ == '__main__': unittest.main()

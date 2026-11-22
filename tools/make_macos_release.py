@@ -169,6 +169,8 @@ def package(a):
     if sys.platform != "darwin": raise AuditError("macOS packaging requires macOS command-line tools")
     if a.output.exists() or a.output.is_symlink(): raise AuditError("output directory already exists; choose a fresh staging root")
     app = a.app.absolute()
+    if a.output.resolve().is_relative_to(app.resolve()):
+        raise AuditError("output directory must be outside the source app bundle")
     build = a.build.resolve()
     info, _, _, _ = inspect_bundle(app)
     license_file = sdl_license(build)

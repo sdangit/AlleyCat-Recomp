@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 """Validate evidence and failure handling without private game files or desktop access."""
 import importlib.util
+import copy
 import json
 import os
 from pathlib import Path
@@ -109,14 +110,19 @@ class ValidationTests(unittest.TestCase):
             root = Path(tmp)
             runner = root / "runner"; runner.write_bytes(b"fixture")
             report = root / "report.json"
-            jobs = [{"id": str(i), "seed": 1, "room": None, "mode": "general", "exit_code": 0,
-                     "timed_out": False, "completed": True, "direct_comparisons": 1, "mismatches": 0,
-                     "duration_seconds": 0.1, "evidence": [], "errors": []} for i in range(41)]
+            schedule = ([("general", seed, None) for seed in range(1, 9)]
+                        + [("room", seed, room) for room in range(1, 8) for seed in range(1, 5)]
+                        + [("joystick", seed, None) for seed in range(1, 5)] + [("quit", 1, None)])
+            jobs = [{"id": str(i), "seed": seed, "room": room, "mode": mode, "exit_code": 0,
+                     "timed_out": False, "completed": True, "direct_comparisons": int(mode != "quit"), "mismatches": 0,
+                     "duration_seconds": 0.1, "evidence": [], "errors": []}
+                    for i, (mode, seed, room) in enumerate(schedule)]
             good = {"schema_version": 1, "status": "PASS", "source_revision": "a" * 40,
                     "executable_sha256": v.sha256(runner), "game_sha256": v.GAME_SHA256,
                     "parameters": {"seeds": 8, "frames": 6000, "rooms": list(range(1, 8)), "jobs": 4, "timeout_seconds": 120},
-                    "jobs": jobs, "totals": {"expected_jobs": 41, "completed_jobs": 41, "direct_comparisons": 41, "mismatches": 0},
-                    "coverage": {"routines": {}, "uncounted": []}, "errors": []}
+                    "jobs": jobs, "totals": {"expected_jobs": 41, "completed_jobs": 41, "direct_comparisons": 40, "mismatches": 0},
+                    "coverage": {"routines": {"0000": {"direct": 40, "nested": 0, "mismatches": 0, "flag_only": 0}},
+                                 "uncounted": []}, "errors": []}
             report.write_text(json.dumps(good))
             v.validate_comparison_report(report, "a" * 40, runner)
             for key, value in (("schema_version", True), ("source_revision", "b" * 40),
@@ -124,6 +130,33 @@ class ValidationTests(unittest.TestCase):
                                ("errors", ["incomplete"]), ("extra", "unsupported")):
                 report.write_text(json.dumps(dict(good, **{key: value})))
                 with self.assertRaises(ValueError):
+                    v.validate_comparison_report(report, "a" * 40, runner)
+            mutations = [
+                ("parameters", "seeds", 7), ("parameters", "frames", 5999),
+                ("parameters", "rooms", list(range(1, 7))),
+                ("totals", "direct_comparisons", 41), ("totals", "completed_jobs", 40),
+            ]
+            for section, key, value in mutations:
+                bad = copy.deepcopy(good)
+                bad[section][key] = value
+                report.write_text(json.dumps(bad))
+                with self.subTest(section=section, key=key), self.assertRaises(ValueError):
+                    v.validate_comparison_report(report, "a" * 40, runner)
+            for mutation in ("duplicate_schedule", "wrong_seed", "wrong_room", "job_total", "coverage_total", "coverage_mismatch", "zero_aggregate"):
+                bad = copy.deepcopy(good)
+                if mutation == "duplicate_schedule":
+                    for job in bad["jobs"]: job.update(mode="general", seed=1, room=None)
+                elif mutation == "wrong_seed": bad["jobs"][0]["seed"] = 9
+                elif mutation == "wrong_room": bad["jobs"][8]["room"] = 7
+                elif mutation == "job_total": bad["jobs"][0]["direct_comparisons"] = 2
+                elif mutation == "coverage_total": bad["coverage"]["routines"]["0000"]["direct"] = 41
+                elif mutation == "coverage_mismatch": bad["coverage"]["routines"]["0000"]["mismatches"] = 1
+                else:
+                    for job in bad["jobs"]: job["direct_comparisons"] = 0
+                    bad["totals"]["direct_comparisons"] = 0
+                    bad["coverage"]["routines"]["0000"]["direct"] = 0
+                report.write_text(json.dumps(bad))
+                with self.subTest(mutation=mutation), self.assertRaises(ValueError):
                     v.validate_comparison_report(report, "a" * 40, runner)
 
 

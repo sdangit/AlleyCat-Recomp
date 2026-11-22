@@ -110,12 +110,24 @@ def validate_comparison_report(path, source_revision, runner):
 
     validate(report, schema)
     t, jobs = report["totals"], report["jobs"]
+    expected_schedule = ({("general", seed, None) for seed in range(1, 9)}
+                         | {("room", seed, room) for room in range(1, 8) for seed in range(1, 5)}
+                         | {("joystick", seed, None) for seed in range(1, 5)}
+                         | {("quit", 1, None)})
+    actual_schedule = {(j["mode"], j["seed"], j["room"]) for j in jobs}
+    params, routines = report["parameters"], report["coverage"]["routines"].values()
     if (report["status"] != "PASS" or report["errors"] or report["source_revision"] != source_revision
             or report["executable_sha256"] != sha256(runner) or report["game_sha256"] != GAME_SHA256
+            or params["seeds"] != 8 or params["frames"] != 6000 or params["rooms"] != list(range(1, 8))
+            or actual_schedule != expected_schedule
             or t["expected_jobs"] != 41 or t["completed_jobs"] != 41 or len(jobs) != 41
             or len({j["id"] for j in jobs}) != 41 or t["direct_comparisons"] <= 0 or t["mismatches"] != 0
+            or t["direct_comparisons"] != sum(j["direct_comparisons"] for j in jobs)
+            or t["direct_comparisons"] != sum(r["direct"] for r in routines)
+            or t["mismatches"] != sum(j["mismatches"] for j in jobs)
+            or t["mismatches"] != sum(r["mismatches"] for r in routines)
             or any(j["errors"] or j["timed_out"] or not j["completed"] or j["exit_code"] != 0
-                   or j["mismatches"] != 0 or j["direct_comparisons"] <= 0 for j in jobs)):
+                   or j["mismatches"] != 0 for j in jobs)):
         raise ValueError("comparison evidence incomplete, failed, or unrelated to requested inputs")
     return report
 

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "plan": "../MACOS_PLAN.md",
   "assessment": "../MACOS_FEASIBILITY.md",
-  "execution_status": "implementing",
+  "execution_status": "engineering_complete",
   "integration_branch": "macos",
   "upstream_remote": "upstream",
   "upstream_url": "https://github.com/Syncr0ndi/AlleyCat-Recomp.git",
@@ -59,7 +59,7 @@
       "acceptance_depends_on": []
     },
     {
-      "status": "running",
+      "status": "accepted",
       "conditional": false,
       "id": "M01",
       "title": "Build portability",
@@ -80,9 +80,15 @@
       "worktree": "/private/tmp/alleycat-m01",
       "branch": "macos-task-m01",
       "baseline_commit": "121adbe",
-      "produced_commits": [],
-      "integrated_commits": [],
-      "evidence": [],
+      "produced_commits": [
+        "fbb9b713ca7b873f4a389d9988cd238f79215a4f"
+      ],
+      "integrated_commits": [
+        "8f07247c32fa90d4a873393df1540f96d7962611"
+      ],
+      "evidence": [
+        "/private/tmp/alleycat-m01/build/m01-evidence/matrix.json"
+      ],
       "blockers": [],
       "gates_contributed": [
         "G01"
@@ -90,7 +96,7 @@
       "acceptance_depends_on": []
     },
     {
-      "status": "pending",
+      "status": "accepted",
       "conditional": false,
       "id": "M02",
       "title": "Mac runtime and bundle",
@@ -103,7 +109,8 @@
         "src/app/macos.h",
         "src/app/macos.m",
         "CMakeLists.txt",
-        "cmake/macos/Info.plist.in"
+        "cmake/macos/Info.plist.in",
+        "src/app/png_write.c"
       ],
       "deliverables": [
         "Native file picker and UTF-8 path handling",
@@ -111,12 +118,20 @@
         "Isolated-state override and reliable selftest",
         "Release application bundle"
       ],
-      "worktree": null,
-      "branch": null,
-      "baseline_commit": null,
-      "produced_commits": [],
-      "integrated_commits": [],
-      "evidence": [],
+      "worktree": "/private/tmp/alleycat-m02",
+      "branch": "macos-task-m02",
+      "baseline_commit": "8f07247c32fa90d4a873393df1540f96d7962611",
+      "produced_commits": [
+        "b3fd2b0"
+      ],
+      "integrated_commits": [
+        "f7fa8cf78df0362e55131dc5478f5608265e270e"
+      ],
+      "evidence": [
+        "/private/tmp/alleycat-m02/build/m02-evidence/",
+        "build/macos-agent/evidence/native-ui.json",
+        "build/macos-agent/evidence/runtime-automated.json"
+      ],
       "blockers": [],
       "gates_contributed": [
         "G05",
@@ -125,7 +140,7 @@
       "acceptance_depends_on": []
     },
     {
-      "status": "running",
+      "status": "accepted",
       "conditional": false,
       "id": "M03",
       "title": "Trustworthy checker and test tooling",
@@ -150,9 +165,15 @@
       "worktree": "/private/tmp/alleycat-m03",
       "branch": "macos-task-m03",
       "baseline_commit": "121adbe",
-      "produced_commits": [],
-      "integrated_commits": [],
-      "evidence": [],
+      "produced_commits": [
+        "b255bfc"
+      ],
+      "integrated_commits": [
+        "6ca2d48806d64b328ab92c7b0050013cfb769c08"
+      ],
+      "evidence": [
+        "/private/tmp/alleycat-m03/build/m03-evidence/"
+      ],
       "blockers": [],
       "gates_contributed": [
         "G02"
@@ -162,7 +183,7 @@
       ]
     },
     {
-      "status": "pending",
+      "status": "accepted",
       "conditional": false,
       "id": "M04",
       "title": "Mac release packaging",
@@ -174,7 +195,8 @@
         "tools/make_macos_release.py",
         "release/macos/**",
         "cmake/macos/**",
-        "CMakeLists.txt"
+        "CMakeLists.txt",
+        "tests/test_make_macos_release.py"
       ],
       "deliverables": [
         "Allowlisted release archive and manifest",
@@ -182,12 +204,21 @@
         "Optional signing inputs without default upload",
         "Mac player guide and owned-art icon"
       ],
-      "worktree": null,
-      "branch": null,
-      "baseline_commit": null,
-      "produced_commits": [],
-      "integrated_commits": [],
-      "evidence": [],
+      "worktree": "/private/tmp/alleycat-m04",
+      "branch": "macos-task-m04",
+      "baseline_commit": "f7fa8cf78df0362e55131dc5478f5608265e270e",
+      "produced_commits": [
+        "9ccc8fb8987428f84cab1d99b6c951261cde8b02",
+        "5e192396d56718f2711098202acc1492d49ac8f5"
+      ],
+      "integrated_commits": [
+        "eb0f9215e20df781de1efa3a2a98ce4c72220848",
+        "f5ce0eb6088c7b57495fbfe1f8309cd7180cc537"
+      ],
+      "evidence": [
+        "dist/macos-local/AlleyCat-1.0-macos-local-macOS-arm64.manifest.json",
+        "build/macos-agent/evidence/extracted-launch.json"
+      ],
       "blockers": [],
       "gates_contributed": [
         "G07"
@@ -195,7 +226,7 @@
       "acceptance_depends_on": []
     },
     {
-      "status": "pending",
+      "status": "accepted",
       "conditional": false,
       "id": "M05",
       "title": "CI and agent acceptance automation",
@@ -214,12 +245,20 @@
         "Local versioned validation report",
         "Explicit private-data and environment checks"
       ],
-      "worktree": null,
-      "branch": null,
-      "baseline_commit": null,
-      "produced_commits": [],
-      "integrated_commits": [],
-      "evidence": [],
+      "worktree": "/private/tmp/alleycat-m05",
+      "branch": "macos-task-m05",
+      "baseline_commit": "6ca2d48806d64b328ab92c7b0050013cfb769c08",
+      "produced_commits": [
+        "256e908abc996f64b1edd1408eafffe2599fadbb",
+        "108ed21c8f638101de7f14515c6000b8dac9fbe3"
+      ],
+      "integrated_commits": [
+        "072bab78499cd1b6abc6710e1eef0bb21be737cb",
+        "67df939aabff35da43a154873d024bb352554b3f"
+      ],
+      "evidence": [
+        "build/macos-agent/evidence/final-automated.json"
+      ],
       "blockers": [],
       "gates_contributed": [
         "G02",
@@ -231,7 +270,7 @@
       ]
     },
     {
-      "status": "pending",
+      "status": "accepted",
       "conditional": false,
       "id": "M06",
       "title": "Integrated validation and documentation",
@@ -253,12 +292,15 @@
         "Required gate results",
         "Implemented-behavior documentation"
       ],
-      "worktree": null,
-      "branch": null,
-      "baseline_commit": null,
+      "worktree": ".",
+      "branch": "macos",
+      "baseline_commit": "f5ce0eb6088c7b57495fbfe1f8309cd7180cc537",
       "produced_commits": [],
       "integrated_commits": [],
-      "evidence": [],
+      "evidence": [
+        "build/macos-agent/evidence/aggregate.json",
+        "docs/MACOS_VALIDATION.md"
+      ],
       "blockers": [],
       "gates_contributed": [
         "G01",
@@ -273,7 +315,7 @@
       "acceptance_depends_on": []
     },
     {
-      "status": "pending",
+      "status": "accepted",
       "conditional": false,
       "id": "M07",
       "title": "Independent review",
@@ -288,10 +330,12 @@
       ],
       "worktree": null,
       "branch": null,
-      "baseline_commit": null,
+      "baseline_commit": "f5ce0eb6088c7b57495fbfe1f8309cd7180cc537",
       "produced_commits": [],
       "integrated_commits": [],
-      "evidence": [],
+      "evidence": [
+        "build/macos-agent/evidence/independent-review.json"
+      ],
       "blockers": [],
       "gates_contributed": [
         "G09"
@@ -299,7 +343,7 @@
       "acceptance_depends_on": []
     },
     {
-      "status": "pending",
+      "status": "blocked",
       "conditional": true,
       "id": "M08",
       "title": "Distribution qualification",
@@ -323,25 +367,30 @@
       "baseline_commit": null,
       "produced_commits": [],
       "integrated_commits": [],
-      "evidence": [],
-      "blockers": [],
+      "evidence": [
+        "build/macos-agent/evidence/signing-availability.json"
+      ],
+      "blockers": [
+        "No usable Developer ID Application identity; notarization and external distribution were not performed."
+      ],
       "gates_contributed": [
         "G10"
       ],
       "acceptance_depends_on": []
     }
   ],
-  "product_state": "IN_PROGRESS",
+  "product_state": "ENGINEERING_COMPLETE",
   "gate_status": {
-    "G01": "NOT_RUN",
-    "G02": "NOT_RUN",
-    "G03": "NOT_RUN",
-    "G04": "NOT_RUN",
-    "G05": "NOT_RUN",
-    "G06": "NOT_RUN",
-    "G07": "NOT_RUN",
-    "G08": "NOT_RUN",
-    "G09": "NOT_RUN",
+    "G01": "PASS",
+    "G02": "PASS",
+    "G03": "PASS",
+    "G04": "PASS",
+    "G05": "PASS",
+    "G06": "PASS",
+    "G07": "PASS",
+    "G08": "PASS",
+    "G09": "PASS",
     "G10": "NOT_RUN"
-  }
+  },
+  "implementation_revision": "f5ce0eb6088c7b57495fbfe1f8309cd7180cc537"
 }

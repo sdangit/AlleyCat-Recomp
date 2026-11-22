@@ -3,12 +3,13 @@
 </p>
 
 <p align="center">
-  <b>Bill Williams' 1984 IBM PC classic <i>Alley Cat</i>, rewritten in C to run natively on Windows.</b><br>
+  <b>Bill Williams' 1984 IBM PC classic <i>Alley Cat</i>, rewritten in C for Windows and macOS.</b><br>
   No DOSBox, no game files included &mdash; bring your own <code>CAT.EXE</code> and play.
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/platform-Windows%2010%20%7C%2011-0078D6?style=for-the-badge" alt="Platform: Windows 10 | 11">
+  <img src="https://img.shields.io/badge/macOS-Apple%20Silicon-555555?style=for-the-badge" alt="macOS: Apple Silicon">
   <img src="https://img.shields.io/badge/status-1.0-2ea44f?style=for-the-badge" alt="Status: 1.0">
   <img src="https://img.shields.io/badge/license-MIT-2ea44f?style=for-the-badge" alt="License: MIT">
   <img src="https://img.shields.io/badge/written%20in-C-555555?style=for-the-badge" alt="Written in C">
@@ -26,11 +27,11 @@
 ## ✨ Highlights
 
 - 🐈 **The real game, natively**: every routine of the original 8086 program was rewritten by hand
-  in C and compiled to native x86-64 code. There's no DOSBox, and no emulator executes the game's
-  instructions.
-- ✅ **Proven identical**: each of the 260 routines was run side by side with a machine-exact
-  recompilation of the original and compared register for register, byte for byte:
-  **241 million calls, zero differences**.
+  in C and compiled to native code (x86-64 on Windows, ARM64 on Apple Silicon). There's no DOSBox.
+- ✅ **Checked against the original**: the handwritten routines are compared register for register
+  and byte for byte with a machine-exact recompilation. Upstream reports **241 million calls, zero
+  differences**; this Mac port passed **40,937,961 comparisons, zero mismatches** in its 41-job suite.
+  See [coverage and validation limits](docs/MACOS_VALIDATION.md).
 - 🔒 **Ships nothing copyrighted**: the download contains only this project's own code. Your
   `CAT.EXE` supplies the sprites, tunes and tables when the game starts, and is only ever read.
 - ⏱️ **Original speed and feel**: timing follows a 4.77 MHz IBM PC with CGA graphics, including the
@@ -40,6 +41,8 @@
   resizable 4:3 window, full screen and screenshots.
 
 ## 🚀 Getting started
+
+### Windows
 
 1. Download the latest release from the [**Releases**](../../releases) page and unzip it anywhere.
 2. Start **`alleycat.exe`**.
@@ -52,6 +55,21 @@ You can also put `CAT.EXE` next to `alleycat.exe`, or start `alleycat.exe C:\pat
 > Windows may show *"Windows protected your PC"* for a newly downloaded program. Click
 > **More info → Run anyway**. The game isn't code-signed, which is normal for free hobby projects.
 
+### macOS on this branch
+
+Build `AlleyCat.app` using the [development guide](docs/DEVELOPMENT.md), then open it and choose
+your original game file. The file may be named `cat.exe`; its contents must match the known original.
+The Mac picker remembers your selection in the application's per-user settings directory.
+
+Settings, screenshots, and logs are stored under the directory returned by SDL's application
+preferences API (normally `~/Library/Application Support/AlleyCat/`), outside the app bundle.
+Use **Option** for the game's Alt action; the original **Control** shortcuts still apply.
+Fullscreen is **Option+Return** or F11, and screenshots use F12 (Fn may be needed on some keyboards).
+
+The Mac build targets macOS 11.0 or newer at compilation; the actual validation environment and
+remaining compatibility limits are recorded in [macOS validation](docs/MACOS_VALIDATION.md).
+Local artifacts are not a claim of Developer ID signing or notarization; see the artifact manifest.
+
 ## 🎮 Controls
 
 | Action | Keyboard | Gamepad |
@@ -63,7 +81,7 @@ You can also put `CAT.EXE` next to `alleycat.exe`, or start `alleycat.exe C:\pat
 | Restart the game | `Ctrl`+`R` | |
 | Back to the menu | `Ctrl`+`M` | |
 | Full screen | `F11` or `Alt`+`Enter` | |
-| Screenshot (PNG next to the game) | `F12` | |
+| Screenshot (PNG next to the program on Windows; application screenshots directory on Mac) | `F12` | |
 
 To use the gamepad's analogue stick as the PC joystick, answer **Y** to the game's joystick question.
 
@@ -89,17 +107,19 @@ built in two stages:
    same state on thousands of autoplayed games, comparing registers, flags, memory, port I/O and
    interrupts after every call.
 
-The released program is built from the hand-written C alone. The recompiled code is generated from
-your own `CAT.EXE` at build time and never committed. The release script also scans the program for
-any trace of the original file.
+The released program is built from the hand-written C alone. Reference builds generate recompiled
+code from your own `CAT.EXE`; release-only builds do not need the game file until runtime. Generated
+reference code is never committed. Release packaging includes a filtered byte-match audit against
+the original file alongside checks of the packaged contents.
 
 More detail: [rewrite method and status](docs/REWRITE.md) ·
 [development guide](docs/DEVELOPMENT.md)
 
 ## 🧱 Building from source
 
-You need Windows, Python 3, CMake, Ninja and LLVM-MinGW (clang). CMake downloads SDL2 itself. See
-the [**development guide**](docs/DEVELOPMENT.md) for the steps, the checker and the test runner.
+You need Python 3.10+, CMake 3.20+, and a C compiler: Apple Clang/Command Line Tools on macOS,
+or LLVM-MinGW on Windows. CMake downloads the pinned SDL2 source for GUI builds. See the
+[**development guide**](docs/DEVELOPMENT.md) for release-only builds, reference comparisons, and packaging.
 
 ## ❓ FAQ
 

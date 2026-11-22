@@ -1,6 +1,6 @@
 # macOS agent execution plan
 
-Status: execution authorized on 21 November 2026; see the task ledger for current progress.
+Status: engineering complete on 21 November 2026. See [validation results](MACOS_VALIDATION.md) and the task ledger; distribution qualification remains conditional.
 
 This plan produces an Apple Silicon macOS application from the existing C game and SDL2 front end. It builds on [the feasibility assessment](MACOS_FEASIBILITY.md), including the successful native launch, user-confirmed graphics and sound, and 40,937,961 comparisons with zero mismatches. The work stays on `macos`; `main` remains an upstream mirror.
 
@@ -131,7 +131,7 @@ Acceptance: all four configurations compile on the host without `-include stddef
 
 ### M02 Mac runtime and bundle
 
-Owner: runtime agent. Paths: `src/app/main.c`, new `src/app/macos.h` and `src/app/macos.m`, `CMakeLists.txt` after M01, and an initial `cmake/macos/Info.plist.in`. Do not change game/CPU semantics or the test runner.
+Owner: runtime agent. Paths: `src/app/main.c`, `src/app/png_write.c` (truthful write failures), new `src/app/macos.h` and `src/app/macos.m`, `CMakeLists.txt` after M01, and an initial `cmake/macos/Info.plist.in`. Do not change game/CPU semantics or the test runner.
 
 The platform bridge exposes a small C API with selected, cancelled, and error outcomes. Use caller-owned UTF-8 output and error buffers with explicit capacities; never return a truncated path as success. Keep Objective-C memory ownership inside the bridge. Enable Objective-C and add Cocoa linkage only for Apple app targets. The bridge selects a file; `game_file_load()` remains the sole content validator.
 
@@ -281,4 +281,4 @@ If G05 or G06 cannot be exercised, the state remains partial/blocked rather than
 
 Distribution readiness additionally requires G10. Branch synchronization and implementation can proceed independently of signing credentials. When a worker is blocked, it reports the exact dependency and continues independent owned work; the coordinator reallocates capacity rather than polling indefinitely.
 
-The final execution handoff includes branch/commit, app/archive paths, checksums, test summary, known limitations, upstream baseline, and whether anything was pushed or published. It must not say that main was synchronized unless the corresponding refs were verified. At the end of this planning turn, only branch configuration and planning documents are changed; implementation tasks remain pending.
+The final execution handoff includes branch/commit, app/archive paths, checksums, test summary, known limitations, upstream baseline, and whether anything was pushed or published. It must not say that main was synchronized unless the corresponding refs were verified. The original planning checkpoint contained only branch configuration and planning documents. Implementation results and current completion state are recorded in [MACOS_VALIDATION.md](MACOS_VALIDATION.md) and the task ledger.

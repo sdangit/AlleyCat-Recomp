@@ -9,6 +9,7 @@
  * frame (59.92 Hz) to present the picture, collect input and pace against real time. */
 #pragma once
 #include "v30.h"
+#include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
 

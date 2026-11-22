@@ -1,6 +1,16 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Syncr0ndi
 cmake_minimum_required(VERSION 3.20)
+
+# Initialize the Mac deployment target before compiler detection. Honor explicit
+# toolchain, command-line, and environment settings; use the native architecture
+# unless the caller supplies CMAKE_OSX_ARCHITECTURES.
+if(CMAKE_HOST_APPLE AND NOT CMAKE_TOOLCHAIN_FILE
+   AND (NOT DEFINED CMAKE_SYSTEM_NAME OR CMAKE_SYSTEM_NAME STREQUAL "Darwin"))
+  if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET AND NOT DEFINED ENV{MACOSX_DEPLOYMENT_TARGET})
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS deployment version")
+  endif()
+endif()
 project(alleycat_recomp C)
 
 set(CMAKE_C_STANDARD 11)
@@ -9,51 +19,71 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
 
+option(CAT_BUILD_APP "Build the SDL2 game" ON)
+option(CAT_BUILD_REFERENCE "Build the generated reference game and comparison runner" ON)
+set(CAT_EXE "" CACHE FILEPATH "Path to the original CAT.EXE (required for reference builds)")
+find_package(Python3 3.10 REQUIRED COMPONENTS Interpreter)
+
 # Privacy: never embed the build machine's folders in binaries.
 if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
   add_compile_options("-ffile-prefix-map=${CMAKE_SOURCE_DIR}/=" "-ffile-prefix-map=${CMAKE_SOURCE_DIR}=.")
 endif()
 
-# The player's own CAT.EXE. The recompiled code is generated from it into the build folder
-# (derived from the game: never committed, never shipped).
-set(CAT_EXE "" CACHE FILEPATH "Path to the original CAT.EXE (Alley Cat, 1984)")
-if(NOT EXISTS "${CAT_EXE}")
-  message(FATAL_ERROR "Set -DCAT_EXE=<path to your CAT.EXE>")
-endif()
-find_package(Python3 3.8 REQUIRED COMPONENTS Interpreter)
-set(GEN_DIR ${CMAKE_BINARY_DIR}/gen)
-set(GEN_TOOLS ${CMAKE_SOURCE_DIR}/tools/catrecomp.py ${CMAKE_SOURCE_DIR}/tools/catmap.py ${CMAKE_SOURCE_DIR}/tools/v30dec.py)
-# Hand-written routines (phase 2) replace their recompiled originals; adding one re-runs the generator.
-file(GLOB HAND_SRC CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/game/*.c)
-set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${GEN_TOOLS} ${CAT_EXE} ${HAND_SRC})
-execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/catrecomp.py ${CAT_EXE} ${GEN_DIR}
-                        --hand ${CMAKE_SOURCE_DIR}/src/game
-                RESULT_VARIABLE gen_rc)
-if(NOT gen_rc EQUAL 0)
-  message(FATAL_ERROR "Code generation failed")
-endif()
-file(GLOB CAT_GEN_SRC ${GEN_DIR}/*.c)
-
+file(GLOB HAND_SRC CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/game/*.c")
 add_library(cpu86 STATIC src/cpu/v30.c src/cpu/v30_interp.c)
 target_include_directories(cpu86 PUBLIC src/cpu)
 
 add_library(pcmachine STATIC src/pc/pc.c src/pc/font8x8.c)
 target_include_directories(pcmachine PUBLIC src/pc)
 target_link_libraries(pcmachine PUBLIC cpu86)
-
-add_library(catgen STATIC ${CAT_GEN_SRC} ${HAND_SRC})
-target_include_directories(catgen PUBLIC ${GEN_DIR} src/game)
-target_link_libraries(catgen PUBLIC cpu86 pcmachine)
 if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
-  target_compile_options(catgen PRIVATE -Wno-unused-label -Wno-unused-variable)
   target_compile_options(pcmachine PRIVATE -Wall -Wextra)
 endif()
 
-# Headless test runner: scripted keys, PNG screenshots, WAV audio.
-add_executable(cat_test src/app/test_main.c src/app/png_write.c src/app/game_file.c)
-target_link_libraries(cat_test PRIVATE pcmachine catgen)
+# The release table contains only handwritten function names and addresses.
+# Neither configuring nor compiling these targets needs the player's game file.
+set(HAND_ENTRIES "${CMAKE_BINARY_DIR}/hand_entries.c")
+add_custom_command(OUTPUT "${HAND_ENTRIES}"
+  COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/hand_entries.py"
+          "${CMAKE_SOURCE_DIR}/src/game" "${HAND_ENTRIES}"
+  DEPENDS ${HAND_SRC} "${CMAKE_SOURCE_DIR}/tools/hand_entries.py"
+  VERBATIM)
+add_library(cathand STATIC ${HAND_SRC} "${HAND_ENTRIES}")
+target_include_directories(cathand PUBLIC src/game)
+target_compile_definitions(cathand PUBLIC CAT_RELEASE)
+target_link_libraries(cathand PUBLIC pcmachine)
 
-option(CAT_BUILD_APP "Build the SDL2 game" ON)
+set(APP_COMMON src/app/png_write.c src/app/game_file.c)
+add_executable(cat_test_release src/app/test_main.c ${APP_COMMON})
+target_link_libraries(cat_test_release PRIVATE cathand)
+
+# Reference code is derived from the player's own executable and stays in the
+# build directory. Keep the existing development behavior when this option is ON.
+if(CAT_BUILD_REFERENCE)
+  if(NOT EXISTS "${CAT_EXE}" OR IS_DIRECTORY "${CAT_EXE}")
+    message(FATAL_ERROR "CAT_BUILD_REFERENCE=ON requires -DCAT_EXE=<path to your CAT.EXE>; use -DCAT_BUILD_REFERENCE=OFF for a release-only build")
+  endif()
+  set(GEN_DIR "${CMAKE_BINARY_DIR}/gen")
+  set(GEN_TOOLS "${CMAKE_SOURCE_DIR}/tools/catrecomp.py" "${CMAKE_SOURCE_DIR}/tools/catmap.py"
+                "${CMAKE_SOURCE_DIR}/tools/v30dec.py" "${CMAKE_SOURCE_DIR}/tools/liveness.py")
+  set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${GEN_TOOLS} "${CAT_EXE}" ${HAND_SRC})
+  execute_process(COMMAND "${Python3_EXECUTABLE}" "${CMAKE_SOURCE_DIR}/tools/catrecomp.py"
+                          "${CAT_EXE}" "${GEN_DIR}" --hand "${CMAKE_SOURCE_DIR}/src/game"
+                  RESULT_VARIABLE gen_rc)
+  if(NOT gen_rc EQUAL 0)
+    message(FATAL_ERROR "Code generation failed: CAT_EXE must be the known original game file")
+  endif()
+  file(GLOB CAT_GEN_SRC "${GEN_DIR}/*.c")
+  add_library(catgen STATIC ${CAT_GEN_SRC} ${HAND_SRC})
+  target_include_directories(catgen PUBLIC "${GEN_DIR}" src/game)
+  target_link_libraries(catgen PUBLIC cpu86 pcmachine)
+  if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+    target_compile_options(catgen PRIVATE -Wno-unused-label -Wno-unused-variable)
+  endif()
+  add_executable(cat_test src/app/test_main.c ${APP_COMMON})
+  target_link_libraries(cat_test PRIVATE pcmachine catgen)
+endif()
+
 if(CAT_BUILD_APP)
   set(SDL_SHARED OFF CACHE BOOL "" FORCE)
   set(SDL_STATIC ON CACHE BOOL "" FORCE)
@@ -64,41 +94,29 @@ if(CAT_BUILD_APP)
     URL https://github.com/libsdl-org/SDL/releases/download/release-2.30.9/SDL2-2.30.9.tar.gz
     URL_HASH SHA256=24b574f71c87a763f50704bbb630cbe38298d544a1f890f099a4696b1d6beba4)
   FetchContent_MakeAvailable(SDL2)
-  add_executable(alleycat WIN32 src/app/main.c src/app/game_file.c src/app/png_write.c)
-  target_link_libraries(alleycat PRIVATE pcmachine catgen SDL2::SDL2main SDL2::SDL2-static)
+
+  add_executable(alleycat_release WIN32 src/app/main.c ${APP_COMMON})
+  target_link_libraries(alleycat_release PRIVATE cathand SDL2::SDL2main SDL2::SDL2-static)
+  if(CAT_BUILD_REFERENCE)
+    add_executable(alleycat WIN32 src/app/main.c ${APP_COMMON})
+    target_link_libraries(alleycat PRIVATE pcmachine catgen SDL2::SDL2main SDL2::SDL2-static)
+  endif()
   if(WIN32)
-    target_link_libraries(alleycat PRIVATE comdlg32)
+    foreach(t alleycat_release alleycat)
+      if(TARGET ${t})
+        target_link_libraries(${t} PRIVATE comdlg32)
+      endif()
+    endforeach()
   endif()
 endif()
 
 if(MINGW)
-  foreach(t cat_test alleycat)
+  foreach(t cat_test_release cat_test alleycat_release alleycat)
     if(TARGET ${t})
       target_link_options(${t} PRIVATE -static)
     endif()
   endforeach()
-endif()
-
-# Release game: only the hand-written C (src/game) and the machine; no recompiled code.
-# The routine table is made from the hand-written function names (addresses only).
-if(CAT_BUILD_APP)
-  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/hand_entries.c
-    COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/hand_entries.py ${CMAKE_SOURCE_DIR}/src/game ${CMAKE_BINARY_DIR}/hand_entries.c
-    DEPENDS ${HAND_SRC} ${CMAKE_SOURCE_DIR}/tools/hand_entries.py)
-  add_executable(alleycat_release WIN32 src/app/main.c src/app/game_file.c src/app/png_write.c
-                 ${HAND_SRC} ${CMAKE_BINARY_DIR}/hand_entries.c)
-  target_include_directories(alleycat_release PRIVATE src/game)
-  target_compile_definitions(alleycat_release PRIVATE CAT_RELEASE)
-  target_link_libraries(alleycat_release PRIVATE pcmachine SDL2::SDL2main SDL2::SDL2-static)
-  add_executable(cat_test_release src/app/test_main.c src/app/png_write.c src/app/game_file.c
-                 ${HAND_SRC} ${CMAKE_BINARY_DIR}/hand_entries.c)
-  target_include_directories(cat_test_release PRIVATE src/game)
-  target_compile_definitions(cat_test_release PRIVATE CAT_RELEASE)
-  target_link_libraries(cat_test_release PRIVATE pcmachine)
-  if(WIN32)
-    target_link_libraries(alleycat_release PRIVATE comdlg32)
-  endif()
-  if(MINGW)
-    target_link_options(alleycat_release PRIVATE -static -s)
+  if(TARGET alleycat_release)
+    target_link_options(alleycat_release PRIVATE -s)
   endif()
 endif()

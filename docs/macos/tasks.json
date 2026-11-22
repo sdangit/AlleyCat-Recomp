@@ -1,0 +1,347 @@
+{
+  "schema_version": 1,
+  "plan": "../MACOS_PLAN.md",
+  "assessment": "../MACOS_FEASIBILITY.md",
+  "execution_status": "awaiting_execution",
+  "integration_branch": "macos",
+  "upstream_remote": "upstream",
+  "upstream_url": "https://github.com/Syncr0ndi/AlleyCat-Recomp.git",
+  "fork_remote": "origin",
+  "baseline_commit": "ed19308f2e73100fbe4fb09dd3585f083ff7361b",
+  "max_active_workers": 3,
+  "max_concurrent_full_comparison_suites": 1,
+  "state_owner": "coordinator",
+  "allowed_task_states": [
+    "pending",
+    "running",
+    "review",
+    "accepted",
+    "blocked"
+  ],
+  "shared_file_order": {
+    "CMakeLists.txt": [
+      "M01",
+      "M02",
+      "M04"
+    ],
+    "cmake/macos/Info.plist.in": [
+      "M02",
+      "M04"
+    ]
+  },
+  "private_state_root": "build/macos-agent/",
+  "tasks": [
+    {
+      "status": "accepted",
+      "conditional": false,
+      "id": "M00",
+      "title": "Branch and planning baseline",
+      "role": "coordinator",
+      "depends_on": [],
+      "owns": [
+        "docs/MACOS_FEASIBILITY.md",
+        "docs/MACOS_PLAN.md",
+        "docs/macos/tasks.json"
+      ],
+      "deliverables": [
+        "Local macos branch",
+        "Verified upstream baseline",
+        "Reviewed execution contracts and task ledger"
+      ],
+      "worktree": null,
+      "branch": null,
+      "baseline_commit": null,
+      "produced_commits": [],
+      "integrated_commits": [],
+      "evidence": [],
+      "blockers": [],
+      "gates_contributed": [],
+      "acceptance_depends_on": []
+    },
+    {
+      "status": "pending",
+      "conditional": false,
+      "id": "M01",
+      "title": "Build portability",
+      "role": "build_agent",
+      "depends_on": [
+        "M00"
+      ],
+      "owns": [
+        "CMakeLists.txt",
+        "src/pc/pc.h",
+        "cmake/build/**"
+      ],
+      "deliverables": [
+        "Python 3.10 minimum and complete standard headers",
+        "CAT_BUILD_REFERENCE option and four-way target matrix",
+        "Release builds independent of game data"
+      ],
+      "worktree": null,
+      "branch": null,
+      "baseline_commit": null,
+      "produced_commits": [],
+      "integrated_commits": [],
+      "evidence": [],
+      "blockers": [],
+      "gates_contributed": [
+        "G01"
+      ],
+      "acceptance_depends_on": []
+    },
+    {
+      "status": "pending",
+      "conditional": false,
+      "id": "M02",
+      "title": "Mac runtime and bundle",
+      "role": "runtime_agent",
+      "depends_on": [
+        "M01"
+      ],
+      "owns": [
+        "src/app/main.c",
+        "src/app/macos.h",
+        "src/app/macos.m",
+        "CMakeLists.txt",
+        "cmake/macos/Info.plist.in"
+      ],
+      "deliverables": [
+        "Native file picker and UTF-8 path handling",
+        "Per-user state and truthful write errors",
+        "Isolated-state override and reliable selftest",
+        "Release application bundle"
+      ],
+      "worktree": null,
+      "branch": null,
+      "baseline_commit": null,
+      "produced_commits": [],
+      "integrated_commits": [],
+      "evidence": [],
+      "blockers": [],
+      "gates_contributed": [
+        "G05",
+        "G06"
+      ],
+      "acceptance_depends_on": []
+    },
+    {
+      "status": "pending",
+      "conditional": false,
+      "id": "M03",
+      "title": "Trustworthy checker and test tooling",
+      "role": "verification_agent",
+      "depends_on": [
+        "M00"
+      ],
+      "owns": [
+        "tools/check.py",
+        "tools/hand_coverage.py",
+        "src/app/test_main.c",
+        "tests/test_check*.py",
+        "tests/check_fixtures/**",
+        "tools/check_report.schema.json"
+      ],
+      "deliverables": [
+        "Runner capabilities and mode rejection",
+        "Bounded fail-closed checker and JSON report",
+        "Portable coverage tooling",
+        "Negative process/output tests"
+      ],
+      "worktree": null,
+      "branch": null,
+      "baseline_commit": null,
+      "produced_commits": [],
+      "integrated_commits": [],
+      "evidence": [],
+      "blockers": [],
+      "gates_contributed": [
+        "G02"
+      ],
+      "acceptance_depends_on": [
+        "M01"
+      ]
+    },
+    {
+      "status": "pending",
+      "conditional": false,
+      "id": "M04",
+      "title": "Mac release packaging",
+      "role": "packaging_agent",
+      "depends_on": [
+        "M02"
+      ],
+      "owns": [
+        "tools/make_macos_release.py",
+        "release/macos/**",
+        "cmake/macos/**",
+        "CMakeLists.txt"
+      ],
+      "deliverables": [
+        "Allowlisted release archive and manifest",
+        "Private content-audit path",
+        "Optional signing inputs without default upload",
+        "Mac player guide and owned-art icon"
+      ],
+      "worktree": null,
+      "branch": null,
+      "baseline_commit": null,
+      "produced_commits": [],
+      "integrated_commits": [],
+      "evidence": [],
+      "blockers": [],
+      "gates_contributed": [
+        "G07"
+      ],
+      "acceptance_depends_on": []
+    },
+    {
+      "status": "pending",
+      "conditional": false,
+      "id": "M05",
+      "title": "CI and agent acceptance automation",
+      "role": "automation_agent",
+      "depends_on": [
+        "M01",
+        "M03"
+      ],
+      "owns": [
+        ".github/workflows/macos.yml",
+        "tools/validate_macos.py",
+        "tests/test_validate_macos*.py"
+      ],
+      "deliverables": [
+        "Asset-free Mac and Windows compile CI",
+        "Local versioned validation report",
+        "Explicit private-data and environment checks"
+      ],
+      "worktree": null,
+      "branch": null,
+      "baseline_commit": null,
+      "produced_commits": [],
+      "integrated_commits": [],
+      "evidence": [],
+      "blockers": [],
+      "gates_contributed": [
+        "G02",
+        "G08"
+      ],
+      "acceptance_depends_on": [
+        "M02",
+        "M04"
+      ]
+    },
+    {
+      "status": "pending",
+      "conditional": false,
+      "id": "M06",
+      "title": "Integrated validation and documentation",
+      "role": "coordinator",
+      "depends_on": [
+        "M02",
+        "M03",
+        "M04",
+        "M05"
+      ],
+      "owns": [
+        "README.md",
+        "docs/DEVELOPMENT.md",
+        "THIRD_PARTY_NOTICES.md",
+        "docs/MACOS_VALIDATION.md"
+      ],
+      "deliverables": [
+        "Fresh integrated build and private evidence",
+        "Required gate results",
+        "Implemented-behavior documentation"
+      ],
+      "worktree": null,
+      "branch": null,
+      "baseline_commit": null,
+      "produced_commits": [],
+      "integrated_commits": [],
+      "evidence": [],
+      "blockers": [],
+      "gates_contributed": [
+        "G01",
+        "G02",
+        "G03",
+        "G04",
+        "G05",
+        "G06",
+        "G07",
+        "G08"
+      ],
+      "acceptance_depends_on": []
+    },
+    {
+      "status": "pending",
+      "conditional": false,
+      "id": "M07",
+      "title": "Independent review",
+      "role": "independent_review_agent",
+      "depends_on": [
+        "M06"
+      ],
+      "owns": [],
+      "deliverables": [
+        "Read-only review of final diff and evidence",
+        "Findings resolved by owning workers"
+      ],
+      "worktree": null,
+      "branch": null,
+      "baseline_commit": null,
+      "produced_commits": [],
+      "integrated_commits": [],
+      "evidence": [],
+      "blockers": [],
+      "gates_contributed": [
+        "G09"
+      ],
+      "acceptance_depends_on": []
+    },
+    {
+      "status": "pending",
+      "conditional": true,
+      "id": "M08",
+      "title": "Distribution qualification",
+      "role": "coordinator_or_release_agent",
+      "depends_on": [
+        "M07"
+      ],
+      "owns": [],
+      "prerequisites": [
+        "External-action authorization",
+        "Usable Developer ID identity",
+        "Usable notarization credentials/profile"
+      ],
+      "deliverables": [
+        "Verified distribution signature",
+        "Accepted notarization and stapled ticket",
+        "Revalidated final artifact and manifest"
+      ],
+      "worktree": null,
+      "branch": null,
+      "baseline_commit": null,
+      "produced_commits": [],
+      "integrated_commits": [],
+      "evidence": [],
+      "blockers": [],
+      "gates_contributed": [
+        "G10"
+      ],
+      "acceptance_depends_on": []
+    }
+  ],
+  "product_state": "PLANNED",
+  "gate_status": {
+    "G01": "NOT_RUN",
+    "G02": "NOT_RUN",
+    "G03": "NOT_RUN",
+    "G04": "NOT_RUN",
+    "G05": "NOT_RUN",
+    "G06": "NOT_RUN",
+    "G07": "NOT_RUN",
+    "G08": "NOT_RUN",
+    "G09": "NOT_RUN",
+    "G10": "NOT_RUN"
+  }
+}

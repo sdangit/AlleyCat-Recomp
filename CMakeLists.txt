@@ -97,6 +97,15 @@ if(CAT_BUILD_APP)
     URL https://github.com/libsdl-org/SDL/releases/download/release-2.30.9/SDL2-2.30.9.tar.gz
     URL_HASH SHA256=24b574f71c87a763f50704bbb630cbe38298d544a1f890f099a4696b1d6beba4)
   FetchContent_MakeAvailable(SDL2)
+  # Assertion diagnostics in SDL must not expose an external dependency-cache path.
+  if(CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
+    FetchContent_GetProperties(SDL2 SOURCE_DIR SDL2_PINNED_SOURCE_DIR)
+    foreach(t SDL2-static SDL2main)
+      if(TARGET ${t})
+        target_compile_options(${t} PRIVATE "-ffile-prefix-map=${SDL2_PINNED_SOURCE_DIR}=SDL2")
+      endif()
+    endforeach()
+  endif()
 
   add_executable(alleycat_release WIN32 src/app/main.c ${APP_COMMON})
   target_link_libraries(alleycat_release PRIVATE cathand SDL2::SDL2main SDL2::SDL2-static)
@@ -113,6 +122,8 @@ if(CAT_BUILD_APP)
         target_compile_options(${t} PRIVATE "$<$<COMPILE_LANGUAGE:OBJC>:-fobjc-arc>")
       endif()
     endforeach()
+    target_sources(alleycat_release PRIVATE release/macos/AlleyCat.icns)
+    set_source_files_properties(release/macos/AlleyCat.icns PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
     set_target_properties(alleycat_release PROPERTIES
       MACOSX_BUNDLE TRUE
       OUTPUT_NAME "AlleyCat"

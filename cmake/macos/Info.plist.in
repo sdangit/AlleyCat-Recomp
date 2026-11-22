@@ -4,6 +4,7 @@
 <dict>
   <key>CFBundleExecutable</key><string>${MACOSX_BUNDLE_EXECUTABLE_NAME}</string>
   <key>CFBundleIdentifier</key><string>${CAT_MACOS_BUNDLE_ID}</string>
+  <key>CFBundleIconFile</key><string>AlleyCat.icns</string>
   <key>CFBundleName</key><string>Alley Cat</string>
   <key>CFBundleDisplayName</key><string>Alley Cat</string>
   <key>CFBundlePackageType</key><string>APPL</string>

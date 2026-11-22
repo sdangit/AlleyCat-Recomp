@@ -1,6 +1,6 @@
 # macOS agent execution plan
 
-Status: prepared for review; implementation has not started.
+Status: execution authorized on 21 November 2026; see the task ledger for current progress.
 
 This plan produces an Apple Silicon macOS application from the existing C game and SDL2 front end. It builds on [the feasibility assessment](MACOS_FEASIBILITY.md), including the successful native launch, user-confirmed graphics and sound, and 40,937,961 comparisons with zero mismatches. The work stays on `macos`; `main` remains an upstream mirror.
 
@@ -55,7 +55,7 @@ The machine-readable [task ledger](macos/tasks.json) defines dependencies, owner
 
 At execution start, the coordinator creates ignored `build/macos-agent/` storage for session configuration, evidence, private game-derived files, and per-task handoffs. The existing audit directory is an optional cache, never a required input. Reconfirm the user-provided game file's hash before use. Pass its path through a local `CAT_EXE` variable or ignored session file; do not commit the user's absolute path.
 
-Create each worker's worktree from its recorded integration SHA, under a writable temporary directory, on a branch such as `macos/task-m02-runtime`. All task commands run in that assigned worktree. Use a separate build directory per task/configuration. A resumed agent must first inspect its branch, worktree status, task state, and latest handoff before continuing.
+Create each worker's worktree from its recorded integration SHA, under a writable temporary directory, on a branch such as `macos-task-m02-runtime`. All task commands run in that assigned worktree. Use a separate build directory per task/configuration. A resumed agent must first inspect its branch, worktree status, task state, and latest handoff before continuing.
 
 The coordinator integrates one reviewed task commit series at a time, normally by cherry-pick. Do not integrate both an original commit and a cherry-picked copy. If a task has become stale, reconcile its changes against the current integration revision before accepting it. Do not delete a worktree containing uncommitted work or the only copy of evidence.
 

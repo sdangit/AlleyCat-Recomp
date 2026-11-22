@@ -2,7 +2,7 @@
   "schema_version": 1,
   "plan": "../MACOS_PLAN.md",
   "assessment": "../MACOS_FEASIBILITY.md",
-  "execution_status": "awaiting_execution",
+  "execution_status": "implementing",
   "integration_branch": "macos",
   "upstream_remote": "upstream",
   "upstream_url": "https://github.com/Syncr0ndi/AlleyCat-Recomp.git",
@@ -59,7 +59,7 @@
       "acceptance_depends_on": []
     },
     {
-      "status": "pending",
+      "status": "running",
       "conditional": false,
       "id": "M01",
       "title": "Build portability",
@@ -77,9 +77,9 @@
         "CAT_BUILD_REFERENCE option and four-way target matrix",
         "Release builds independent of game data"
       ],
-      "worktree": null,
-      "branch": null,
-      "baseline_commit": null,
+      "worktree": "/private/tmp/alleycat-m01",
+      "branch": "macos-task-m01",
+      "baseline_commit": "121adbe",
       "produced_commits": [],
       "integrated_commits": [],
       "evidence": [],
@@ -125,7 +125,7 @@
       "acceptance_depends_on": []
     },
     {
-      "status": "pending",
+      "status": "running",
       "conditional": false,
       "id": "M03",
       "title": "Trustworthy checker and test tooling",
@@ -147,9 +147,9 @@
         "Portable coverage tooling",
         "Negative process/output tests"
       ],
-      "worktree": null,
-      "branch": null,
-      "baseline_commit": null,
+      "worktree": "/private/tmp/alleycat-m03",
+      "branch": "macos-task-m03",
+      "baseline_commit": "121adbe",
       "produced_commits": [],
       "integrated_commits": [],
       "evidence": [],
@@ -331,7 +331,7 @@
       "acceptance_depends_on": []
     }
   ],
-  "product_state": "PLANNED",
+  "product_state": "IN_PROGRESS",
   "gate_status": {
     "G01": "NOT_RUN",
     "G02": "NOT_RUN",

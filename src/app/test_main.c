@@ -153,6 +153,14 @@ static void on_frame(PC *p) {
 static void on_exit_(PC *p, int code) { (void)p; printf("game exited (%d)\n", code); finish(0); }
 
 int main(int argc, char **argv) {
+    if (argc == 2 && !strcmp(argv[1], "--capabilities")) {
+#ifdef CAT_RELEASE
+        puts("{\"schema_version\":1,\"runner\":\"cat_test_release\",\"build_mode\":\"release\",\"comparison_supported\":false}");
+#else
+        puts("{\"schema_version\":1,\"runner\":\"cat_test\",\"build_mode\":\"reference\",\"comparison_supported\":true}");
+#endif
+        return 0;
+    }
     if (argc < 2) { fprintf(stderr, "usage: cat_test CAT.EXE [options]\n"); return 2; }
     double scale = 0;
     for (int i = 2; i < argc; i++) {
@@ -166,7 +174,16 @@ int main(int argc, char **argv) {
         else if (!strcmp(argv[i], "--autoplay") && i + 1 < argc) { ap_on = 1; ap_seed = (uint32_t)atol(argv[++i]); }
         else if (!strcmp(argv[i], "--hand-mode") && i + 1 < argc) {
             const char *m = argv[++i];
-            cat_hand_mode = !strcmp(m, "gen") ? HAND_GEN : !strcmp(m, "check") ? HAND_CHECK : HAND_ON;
+            if (!strcmp(m, "on")) cat_hand_mode = HAND_ON;
+            else if (!strcmp(m, "gen")) cat_hand_mode = HAND_GEN;
+            else if (!strcmp(m, "check")) cat_hand_mode = HAND_CHECK;
+            else { fprintf(stderr, "unknown hand mode %s\n", m); return 2; }
+#ifdef CAT_RELEASE
+            if (cat_hand_mode != HAND_ON) {
+                fprintf(stderr, "release runner supports only --hand-mode on; use cat_test for generated-code comparison\n");
+                return 2;
+            }
+#endif
         }
         else if (!strcmp(argv[i], "--key") && i + 1 < argc && nkeys < 512) {
             unsigned sc; int len = 3; long fr;

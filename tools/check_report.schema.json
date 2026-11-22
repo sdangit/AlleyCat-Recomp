@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Alley Cat comparison report version 1",
+  "$defs": {
+    "counts": {
+      "type": "object",
+      "properties": {
+        "direct": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nested": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mismatches": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "flag_only": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "direct",
+        "nested",
+        "mismatches",
+        "flag_only"
+      ],
+      "additionalProperties": false
+    },
+    "job": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "room": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "mode": {
+          "enum": [
+            "general",
+            "joystick",
+            "quit",
+            "room"
+          ]
+        },
+        "exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timed_out": {
+          "type": "boolean"
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "direct_comparisons": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mismatches": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "duration_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "seed",
+        "room",
+        "mode",
+        "exit_code",
+        "timed_out",
+        "completed",
+        "direct_comparisons",
+        "mismatches",
+        "duration_seconds",
+        "evidence",
+        "errors"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "const": 1
+    },
+    "status": {
+      "enum": [
+        "PASS",
+        "FAIL"
+      ]
+    },
+    "source_revision": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "executable_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "game_sha256": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "seeds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "frames": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "rooms": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 7
+          }
+        },
+        "jobs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "timeout_seconds": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "seeds",
+        "frames",
+        "rooms",
+        "jobs",
+        "timeout_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "jobs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/job"
+      }
+    },
+    "totals": {
+      "type": "object",
+      "properties": {
+        "expected_jobs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completed_jobs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "direct_comparisons": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mismatches": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "expected_jobs",
+        "completed_jobs",
+        "direct_comparisons",
+        "mismatches"
+      ],
+      "additionalProperties": false
+    },
+    "coverage": {
+      "type": "object",
+      "properties": {
+        "routines": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/counts"
+          }
+        },
+        "uncounted": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{4}$"
+          }
+        }
+      },
+      "required": [
+        "routines",
+        "uncounted"
+      ],
+      "additionalProperties": false
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "source_revision",
+    "executable_sha256",
+    "game_sha256",
+    "parameters",
+    "jobs",
+    "totals",
+    "coverage",
+    "errors"
+  ],
+  "additionalProperties": false
+}
